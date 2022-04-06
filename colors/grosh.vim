@@ -6,15 +6,6 @@ endif
 
 let g:colors_name = 'grosh'
 
-set background=dark
-
-if &background == 'dark'
-  let s:dim = 1
-else
-  let s:dim = -1
-endif
-
-
 " Helper function to set up highlight executions
 function! s:hi(group, foreground, background, fontStyle)
   exec  "highlight "  . a:group
@@ -51,18 +42,35 @@ let s:bold          =   'bold'
 let s:underline     =   'underline'
 let s:none          =   'NONE'
 
+if &background == 'dark'
+  let s:dim = 1
+
+  " Background
+  let s:bg1           =   '#483434'
+  let s:bg2           =   '#6B4F4F'
+
+  " Colors base
+  let s:primary       =   '#FFF3E4'
+  let s:secondary     =   '#EED6C4'
+  let s:accent        =   '#87AAAA'
+
+else
+  let s:dim = -1
+
+  " Background
+  let s:bg1           =   '#FFF3E4'
+  let s:bg2           =   '#CEB6A4'
+
+  " Colors base
+  let s:primary       =   '#483434'
+  let s:secondary     =   '#6B4F4F'
+  let s:accent        =   '#87AAAA'
+
+endif
 
 " Background
-let s:bg1           =   '#483434'
-let s:bg2           =   '#6B4F4F'
 let s:sub           =   s:adjust_hex(s:bg1, s:dim * 16)
 let s:match         =   s:adjust_hex(s:bg1, s:dim * 16 * 4)
-
-
-" Colors base
-let s:primary       =   '#FFF3E4'
-let s:secondary     =   '#EED6C4'
-let s:accent        =   '#87AAAA'
 
 let s:fg            =   s:adjust_hex(s:bg1, s:dim * 16 * 10)
 let s:function      =   s:primary
@@ -71,7 +79,6 @@ let s:const         =   s:accent
 let s:string        =   s:accent
 
 let s:comment       =   s:adjust_hex(s:bg1, s:dim * 16 * 4)
-
 
 " Syntax highlighting groups
 call s:hi('TabLineSel', s:secondary, s:bg1, s:none)
