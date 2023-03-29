@@ -1,7 +1,12 @@
 if exists('g:autoloaded_myvimcolors')
-  " finish
+  finish
 endif
 let g:autoloaded_myvimcolors = 1
+
+function! myvimcolors#adjust_hue(idx)
+  let l:res = a:idx % 24
+  return l:res == 0 ? 24 : l:res
+endfunction
 
 " 24, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
 let s:pccs_hue = [330, 344, 19, 37, 53, 66, 153, 181, 201, 209, 251, 300]
@@ -18,14 +23,12 @@ endfunction
 function! myvimcolors#hue_info(hue)
   let l:min = 360
   let l:min_idx = -1
-  let l:i=0
-  for h in s:pccs_hue
-    let l:m = abs(a:hue-h)
+  for l:i in range(len(s:pccs_hue))
+    let l:m = abs(a:hue-s:pccs_hue[l:i])
     if l:m < l:min
       let l:min = l:m
       let l:min_idx = l:i
     endif
-    let l:i += 1
   endfor
   return {
         \ 'index': l:min_idx == 0 ? 24 : l:min_idx*2,
@@ -127,8 +130,7 @@ function! myvimcolors#find_suite_contrast(hex, threshold)
   endif
 
   " normal colors
-  let l:hue_idx = (myvimcolors#hue_info(l:hex_hsl[0])['index']+12)%24
-  if l:hue_idx == 0 | let l:hue_idx = 24 | endif
+  let l:hue_idx = myvimcolors#adjust_hue(myvimcolors#hue_info(l:hex_hsl[0])['index']+12)
   for tone in l:hoge_range
     let l:col = g:myvimcolors#pccs[tone .. l:hue_idx]
     let l:con = myvimcolors#get_contrast(a:hex, l:col)
@@ -197,48 +199,71 @@ function! myvimcolors#rgb2hsl(hex) abort
   return map([H, S, L], { i,x -> float2nr(ceil(floor(x * 10) / 10)) })
 endfunction
 
-function! myvimcolors#palette(pattern, accent_color, bg_color)
+function! myvimcolors#palette(pattern, accent_color, isdark)
   let l:accent_hsl = myvimcolors#rgb2hsl(a:accent_color)
-  if myvimcolors#rgb2hsl(a:bg_color)[2] < 50
-    let l:isdark = 1
-  else
-    let l:isdark = -1
-  endif
-  if a:pattern == 'single_color'
-    " 'single_color' : トーン・色相固定
-    return [
-          \  myvimcolors#hsl2rgb(0, 0, float2nr(l:accent_hsl[2]*0.6)),
-          \  myvimcolors#hsl2rgb(0, 0, float2nr(l:accent_hsl[2]*0.7)),
-          \  myvimcolors#hsl2rgb(0, 0, float2nr(l:accent_hsl[2]*0.8)),
-          \  myvimcolors#hsl2rgb(0, 0, float2nr(l:accent_hsl[2]*0.9)),
-          \  myvimcolors#hsl2rgb(0, 0, float2nr(l:accent_hsl[2]*0.9)),
-          \]
-  elseif a:pattern == '70_25_5'
-    " '70_25_5'      : トーン・色相固定
-    return [
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + 180)%360, l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.6)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + 180)%360, l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.7)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + 180)%360, l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.8)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + 180)%360, l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.9)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + 180)%360, l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.9)),
-          \]
+  let l:accent_info = myvimcolors#hue_info(l:accent_hsl[0])
+  if a:pattern == 'dominant_color'
+    " 'dominant_color' : トーン・色相固定
+    if a:isdark == 1
+      return [
+            \  g:myvimcolors#pccs['lt' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['sf' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['ltg' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['s' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
+            \]
+    else
+      return [
+            \  g:myvimcolors#pccs['dk' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['d' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['g' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['dp' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
+            \]
+    endif
   elseif a:pattern == 'tone_on_tone'
     " 'tone_on_tone' : 色相固定
-    return [
-          \  myvimcolors#hsl2rgb(l:accent_hsl[0], l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.6)),
-          \  myvimcolors#hsl2rgb(l:accent_hsl[0], l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.7)),
-          \  myvimcolors#hsl2rgb(l:accent_hsl[0], l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.8)),
-          \  myvimcolors#hsl2rgb(l:accent_hsl[0], l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.9)),
-          \  myvimcolors#hsl2rgb(l:accent_hsl[0], l:accent_hsl[1], float2nr(l:accent_hsl[2]*0.9)),
+    if a:isdark == 1
+      return [
+            \  g:myvimcolors#pccs['lt' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['sf' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['ltg' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['s' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
+            \]
+    else
+      return [
+            \  g:myvimcolors#pccs['dk' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['d' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['g' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['dp' .. l:accent_info['index']],
+            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
+            \]
+    endif
+  elseif a:pattern == 'dominant_tone'
+    let l:hue_idx = myvimcolors#hue_info(l:accent_hsl[0])['index']
+    let l:res = [
+          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx +  4)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx +  8)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 12)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 16)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 20)), l:accent_hsl[1], l:accent_hsl[2]),
           \]
+    if a:isdark == 1
+      return l:res + [g:myvimcolors#pccs['Gy-1.5']]
+    else
+      return l:res + [g:myvimcolors#pccs['Gy-9.5']]
+    endif
   elseif a:pattern == 'tone_in_tone'
     " 'tone_in_tone' : トーン固定
     return [
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-l:isdark*(-0.2)), 0, 100)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-l:isdark*( 0.2)), 0, 100)),
+          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
+          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
           \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-l:isdark*( 0.2)), 0, 100)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-l:isdark*(-0.2)), 0, 100)),
+          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
+          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
           \]
   endif
 endfunction
@@ -256,11 +281,6 @@ function! s:link(src, dest)
 endfunction
 
 function! myvimcolors#highlights(colors)
-  if myvimcolors#rgb2hsl(a:colors.bg)[2] < 50
-    let l:warning_fg = a:colors.bg
-  else
-    let l:warning_fg = a:colors.fg
-  endif
   highlight clear
 
   if exists('syntax_on')
@@ -311,10 +331,10 @@ function! myvimcolors#highlights(colors)
   call s:hi('Debug', a:colors.fg, a:colors.bg, 'NONE')
   call s:hi('Underlined', a:colors.fg, a:colors.bg, 'underline')
   call s:link('Todo', 'Special')
-  call s:hi('Error', l:warning_fg, a:colors.red, 'underline')
-  call s:hi('ErrorMsg', l:warning_fg, a:colors.red, 'NONE')
+  call s:hi('Error', a:colors.bg, a:colors.red, 'underline')
+  call s:hi('ErrorMsg', a:colors.bg, a:colors.red, 'NONE')
   call s:hi('Question', a:colors.third, a:colors.bg, 'NONE')
-  call s:hi('WarningMsg', l:warning_fg, a:colors.yellow, 'NONE')
+  call s:hi('WarningMsg', a:colors.bg, a:colors.yellow, 'NONE')
   call s:hi('Search', a:colors.bg, a:colors.fg, 'NONE')
 
   call s:link('IncSearch', 'Search')
