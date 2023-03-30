@@ -20,7 +20,8 @@ if !exists('g:myvimcolors#patterns')
   let g:myvimcolors#patterns = ['dominant_color', 'tone_on_tone', 'dominant_tone', 'tone_in_tone']
 endif
 if !exists('g:myvimcolors#bg_tones')
-  let g:myvimcolors#bg_tones = ['dkg', 'dk', 'dp', 'g', 'd', 's', 'v', 'ltg', 'sf', 'b', 'lt', 'p']
+  " this must be sorted from light to dark
+  let g:myvimcolors#bg_tones = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']
 endif
 if !exists('g:myvimcolors#statement_bold')
   let g:myvimcolors#statement_bold = 1
@@ -37,7 +38,7 @@ let s:seed = srand()
 let s:idx = myvimcolors#adjust_hue(rand(s:seed)%12*2)
 let s:pccs = g:myvimcolors#fg_tones[rand(s:seed)%len(g:myvimcolors#fg_tones)] .. s:idx
 let s:pattern  = g:myvimcolors#patterns[rand(s:seed)%len(g:myvimcolors#patterns)]
-let s:FIRST    = g:myvimcolors#pccs[s:pccs] " Statement,Type
+let s:FIRST    = g:myvimcolors#pccs[s:pccs]
 
 let g:myvimcolors#emem = s:pccs .. '/' .. s:pattern
 

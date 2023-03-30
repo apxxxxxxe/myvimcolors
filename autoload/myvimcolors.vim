@@ -4,7 +4,7 @@ endif
 let g:autoloaded_myvimcolors = 1
 
 function! myvimcolors#culculate_colors(first, pattern)
-  let l:BG = myvimcolors#find_suite_contrast(a:first, g:myvimcolors#bg_tones, 125)
+  let l:BG = myvimcolors#find_suite_contrast(a:first, 125)
 
   if myvimcolors#rgb2hsl(l:BG)[2] < 50
     set background=dark
@@ -169,15 +169,11 @@ function! myvimcolors#get_contrast(a,b)
   return abs(((l:a[0]-l:b[0])*299.0 + (l:a[1]-l:b[1])*587.0 + (l:a[2]-l:b[2])*114.0) / 1000)
 endfunction
 
-function! myvimcolors#find_suite_contrast(hex, candidate_tones, threshold)
+function! myvimcolors#find_suite_contrast(hex, threshold)
   let l:best_contrast = 0
   let l:best_color = ''
 
-  if len(a:candidate_tones) != 0
-    let l:hoge_range = a:candidate_tones
-  else
-    let l:hoge_range = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']
-  endif
+  let l:hoge_range = g:myvimcolors#bg_tones
   let l:hex_hsl = myvimcolors#rgb2hsl(a:hex)
   if l:hex_hsl[2] < 50
     let l:mono_range = range(1,9)
