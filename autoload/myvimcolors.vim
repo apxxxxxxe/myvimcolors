@@ -3,6 +3,59 @@ if exists('g:autoloaded_myvimcolors')
 endif
 let g:autoloaded_myvimcolors = 1
 
+function! myvimcolors#culculate_colors(first, pattern)
+  let l:BG = myvimcolors#find_suite_contrast(a:first, g:myvimcolors#bg_tones, 125)
+
+  if myvimcolors#rgb2hsl(l:BG)[2] < 50
+    set background=dark
+    let l:isdark = 1
+  else
+    set background=light
+    let l:isdark = -1
+  endif
+
+  let l:palette = myvimcolors#palette(a:pattern, a:first, l:isdark)
+  let l:SECOND     = l:palette[0]
+  let l:THIRD      = l:palette[1]
+  let l:FOURTH     = l:palette[2]
+  let l:FIFTH      = l:palette[3]
+  let l:SIXTH      = l:palette[4]
+  if len(l:palette) == 6
+    let l:BG         = l:palette[5]
+  endif
+
+  let l:SUBBG     = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 7.5 * g:myvimcolors#contrast))
+  let l:COMMENT    = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 40 * g:myvimcolors#contrast))
+  let l:MATCHPAREN = myvimcolors#opposite(l:BG)
+  let l:LINENR     = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 20 * g:myvimcolors#contrast))
+
+  let l:bg_hsl = myvimcolors#rgb2hsl(l:BG)
+  let l:FG         = myvimcolors#hsl2rgb(l:bg_hsl[0], l:bg_hsl[1], myvimcolors#clump(100 - l:bg_hsl[2], 30, 70))
+
+  let l:first_hsl = myvimcolors#rgb2hsl(a:first)
+  let l:GREEN = myvimcolors#hsl2rgb(120, l:first_hsl[1], l:first_hsl[2])
+  let l:YELLOW = myvimcolors#hsl2rgb(50, l:first_hsl[1], l:first_hsl[2])
+  let l:RED = myvimcolors#hsl2rgb(0, l:first_hsl[1], l:first_hsl[2])
+
+  return #{
+        \  fg:         l:FG,
+        \  bg:         l:BG,
+        \  comment:    l:COMMENT,
+        \  first:      a:first,
+        \  second:     l:SECOND,
+        \  third:      l:THIRD,
+        \  fourth:     l:FOURTH,
+        \  fifth:      l:FIFTH,
+        \  sixth:      l:SIXTH,
+        \  red:        l:RED,
+        \  green:      l:GREEN,
+        \  yellow:     l:YELLOW,
+        \  subbg:      l:SUBBG,
+        \  linenr:     l:LINENR,
+        \  matchparen: l:MATCHPAREN,
+        \}
+endfunction
+
 function! myvimcolors#adjust_hue(idx)
   let l:res = a:idx % 24
   return l:res == 0 ? 24 : l:res
@@ -116,17 +169,25 @@ function! myvimcolors#get_contrast(a,b)
   return abs(((l:a[0]-l:b[0])*299.0 + (l:a[1]-l:b[1])*587.0 + (l:a[2]-l:b[2])*114.0) / 1000)
 endfunction
 
-function! myvimcolors#find_suite_contrast(hex, threshold)
+function! myvimcolors#find_suite_contrast(hex, candidate_tones, threshold)
   let l:best_contrast = 0
   let l:best_color = ''
 
+  if len(a:candidate_tones) != 0
+    let l:hoge_range = a:candidate_tones
+  else
+    let l:hoge_range = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']
+  endif
   let l:hex_hsl = myvimcolors#rgb2hsl(a:hex)
   if l:hex_hsl[2] < 50
     let l:mono_range = range(1,9)
-    let l:hoge_range = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']
   else
     let l:mono_range = range(9,1,-1)
-    let l:hoge_range = ['dkg', 'dk', 'dp', 'g', 'd', 's', 'v', 'ltg', 'sf', 'b', 'lt', 'p']
+    let l:hoge_range_inverted = []
+    for i in range(len(l:hoge_range))
+      let l:hoge_range_inverted += [l:hoge_range[len(l:hoge_range)-i-1]]
+    endfor
+    let l:hoge_range = l:hoge_range_inverted
   endif
 
   " normal colors
@@ -270,10 +331,10 @@ endfunction
 
 function! s:hi(group, foreground, background, fontStyle)
   exec  "hi " . a:group
-    \ . " guifg="    . a:foreground
-    \ . " guibg="    . a:background
-    \ . " cterm="    . a:fontStyle
-    \ . " gui="      . a:fontStyle
+        \ . " guifg="    . a:foreground
+        \ . " guibg="    . a:background
+        \ . " cterm="    . a:fontStyle
+        \ . " gui="      . a:fontStyle
 endfunction
 
 function! s:link(src, dest)
@@ -281,6 +342,12 @@ function! s:link(src, dest)
 endfunction
 
 function! myvimcolors#highlights(colors)
+  if myvimcolors#rgb2hsl(a:colors.bg)[2] < 50
+    set background=dark
+  else
+    set background=light
+  endif
+
   highlight clear
 
   if exists('syntax_on')
@@ -302,7 +369,7 @@ function! myvimcolors#highlights(colors)
   call s:hi('Function', a:colors.fourth, 'NONE', 'NONE')
 
   " *Statement
-  call s:hi('Statement', a:colors.first, 'NONE', g:statement_bold ? 'BOLD' : 'NONE')
+  call s:hi('Statement', a:colors.first, 'NONE', g:myvimcolors#statement_bold ? 'BOLD' : 'NONE')
   call s:link('Conditional', 'Statement')
   call s:link('Repeat', 'Statement')
   call s:link('Label', 'Statement')
