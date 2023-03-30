@@ -1,10 +1,10 @@
-if exists('g:loaded_myvimcolors')
+if exists('g:loaded_irodori')
   finish
 endif
-let g:loaded_myvimcolors = 1
+let g:loaded_irodori = 1
 
 " ref: http://www.garakuta.net/color/pccs/matrix.html
-let g:myvimcolors#pccs = {
+let g:irodori#pccs = {
       \  'v1':     '#b91f57',
       \  'v2':     '#d02f48',
       \  'v3':     '#dd443b',
@@ -196,7 +196,7 @@ let g:myvimcolors#pccs = {
       \  'Gy-1.5': '#272727',
       \}
 
-let g:myvimcolors#pccs_invert = {}
-for key in keys(g:myvimcolors#pccs)
-  let g:myvimcolors#pccs_invert[g:myvimcolors#pccs[key]] = key
+let g:irodori#pccs_invert = {}
+for key in keys(g:irodori#pccs)
+  let g:irodori#pccs_invert[g:irodori#pccs[key]] = key
 endfor

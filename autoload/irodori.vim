@@ -1,12 +1,12 @@
-if exists('g:autoloaded_myvimcolors')
+if exists('g:autoloaded_irodori')
   finish
 endif
-let g:autoloaded_myvimcolors = 1
+let g:autoloaded_irodori = 1
 
-function! myvimcolors#culculate_colors(first, pattern)
-  let l:BG = myvimcolors#find_suite_contrast(a:first, 125)
+function! irodori#culculate_colors(first, pattern)
+  let l:BG = irodori#find_suite_contrast(a:first, 125)
 
-  if myvimcolors#rgb2hsl(l:BG)[2] < 50
+  if irodori#rgb2hsl(l:BG)[2] < 50
     set background=dark
     let l:isdark = 1
   else
@@ -14,7 +14,7 @@ function! myvimcolors#culculate_colors(first, pattern)
     let l:isdark = -1
   endif
 
-  let l:palette = myvimcolors#palette(a:pattern, a:first, l:isdark)
+  let l:palette = irodori#palette(a:pattern, a:first, l:isdark)
   let l:SECOND     = l:palette[0]
   let l:THIRD      = l:palette[1]
   let l:FOURTH     = l:palette[2]
@@ -24,18 +24,18 @@ function! myvimcolors#culculate_colors(first, pattern)
     let l:BG         = l:palette[5]
   endif
 
-  let l:SUBBG     = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 7.5 * g:myvimcolors#contrast))
-  let l:COMMENT    = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 40 * g:myvimcolors#contrast))
-  let l:MATCHPAREN = myvimcolors#opposite(l:BG)
-  let l:LINENR     = myvimcolors#adjust_hex(l:BG, float2nr(l:isdark * 20 * g:myvimcolors#contrast))
+  let l:SUBBG     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 7.5 * g:irodori#contrast))
+  let l:COMMENT    = irodori#adjust_hex(l:BG, float2nr(l:isdark * 40 * g:irodori#contrast))
+  let l:MATCHPAREN = irodori#opposite(l:BG)
+  let l:LINENR     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 20 * g:irodori#contrast))
 
-  let l:bg_hsl = myvimcolors#rgb2hsl(l:BG)
-  let l:FG         = myvimcolors#hsl2rgb(l:bg_hsl[0], l:bg_hsl[1], myvimcolors#clump(100 - l:bg_hsl[2], 30, 70))
+  let l:bg_hsl = irodori#rgb2hsl(l:BG)
+  let l:FG         = irodori#hsl2rgb(l:bg_hsl[0], l:bg_hsl[1], irodori#clump(100 - l:bg_hsl[2], 30, 70))
 
-  let l:first_hsl = myvimcolors#rgb2hsl(a:first)
-  let l:GREEN = myvimcolors#hsl2rgb(120, l:first_hsl[1], l:first_hsl[2])
-  let l:YELLOW = myvimcolors#hsl2rgb(50, l:first_hsl[1], l:first_hsl[2])
-  let l:RED = myvimcolors#hsl2rgb(0, l:first_hsl[1], l:first_hsl[2])
+  let l:first_hsl = irodori#rgb2hsl(a:first)
+  let l:GREEN = irodori#hsl2rgb(120, l:first_hsl[1], l:first_hsl[2])
+  let l:YELLOW = irodori#hsl2rgb(50, l:first_hsl[1], l:first_hsl[2])
+  let l:RED = irodori#hsl2rgb(0, l:first_hsl[1], l:first_hsl[2])
 
   return #{
         \  fg:         l:FG,
@@ -56,7 +56,7 @@ function! myvimcolors#culculate_colors(first, pattern)
         \}
 endfunction
 
-function! myvimcolors#adjust_hue(idx)
+function! irodori#adjust_hue(idx)
   let l:res = a:idx % 24
   return l:res == 0 ? 24 : l:res
 endfunction
@@ -64,16 +64,16 @@ endfunction
 " 24, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
 let s:pccs_hue = [330, 344, 19, 37, 53, 66, 153, 181, 201, 209, 251, 300]
 
-function! myvimcolors#pccs2idx(pccs)
+function! irodori#pccs2idx(pccs)
   return str2nr(matchstr(a:pccs, '[0-9]\+'))
 endfunction
 
-function! myvimcolors#idx2hue(idx)
+function! irodori#idx2hue(idx)
   let l:idx = a:idx % 24 / 2
   return s:pccs_hue[l:idx]
 endfunction
 
-function! myvimcolors#hue_info(hue)
+function! irodori#hue_info(hue)
   let l:min = 360
   let l:min_idx = -1
   for l:i in range(len(s:pccs_hue))
@@ -90,7 +90,7 @@ function! myvimcolors#hue_info(hue)
 endfunction
 
 " 値を最小値と最大値の範囲に収める
-function! myvimcolors#clump(value, min, max)
+function! irodori#clump(value, min, max)
   if a:value < a:min
     return a:min
   elseif a:value > a:max
@@ -101,13 +101,13 @@ function! myvimcolors#clump(value, min, max)
 endfunction
 
 " 輝度を加算して返す
-function! myvimcolors#adjust_hex(hex, num)
-  let l:hex_hsl = myvimcolors#rgb2hsl(a:hex)
-  return myvimcolors#hsl2rgb(l:hex_hsl[0], l:hex_hsl[1], myvimcolors#clump(l:hex_hsl[2] + a:num, 0, 100))
+function! irodori#adjust_hex(hex, num)
+  let l:hex_hsl = irodori#rgb2hsl(a:hex)
+  return irodori#hsl2rgb(l:hex_hsl[0], l:hex_hsl[1], irodori#clump(l:hex_hsl[2] + a:num, 0, 100))
 endfunction
 
 " 反対色を返す
-function! myvimcolors#opposite(hex)
+function! irodori#opposite(hex)
   let l:r = 255 - str2nr(strpart(a:hex, 1, 2), 16)
   let l:g = 255 - str2nr(strpart(a:hex, 3, 2), 16)
   let l:b = 255 - str2nr(strpart(a:hex, 5, 2), 16)
@@ -115,18 +115,18 @@ function! myvimcolors#opposite(hex)
   return printf("#%02x%02x%02x", l:r, l:g, l:b)
 endfunction
 
-function! myvimcolors#ary2hex(R,G,B) abort
+function! irodori#ary2hex(R,G,B) abort
   return printf("#%02x%02x%02x", a:R, a:G, a:B)
 endfunction
 
-function! myvimcolors#hex2ary(hex) abort
+function! irodori#hex2ary(hex) abort
   let l:r = str2nr(strpart(a:hex, 1, 2), 16)
   let l:g = str2nr(strpart(a:hex, 3, 2), 16)
   let l:b = str2nr(strpart(a:hex, 5, 2), 16)
   return [l:r, l:g, l:b]
 endfunction
 
-function! myvimcolors#hsl2rgb(H, S, L) abort
+function! irodori#hsl2rgb(H, S, L) abort
   if a:L <= 49
     let max = 2.55 * (a:L + a:L * (1.0 * a:S / 100))
     let min = 2.55 * (a:L - a:L * (1.0 * a:S / 100))
@@ -163,18 +163,18 @@ function! myvimcolors#hsl2rgb(H, S, L) abort
 endfunction
 
 " ref: http://www.w3.org/TR/AERT#color
-function! myvimcolors#get_contrast(a,b)
-  let l:a = myvimcolors#hex2ary(a:a)
-  let l:b = myvimcolors#hex2ary(a:b)
+function! irodori#get_contrast(a,b)
+  let l:a = irodori#hex2ary(a:a)
+  let l:b = irodori#hex2ary(a:b)
   return abs(((l:a[0]-l:b[0])*299.0 + (l:a[1]-l:b[1])*587.0 + (l:a[2]-l:b[2])*114.0) / 1000)
 endfunction
 
-function! myvimcolors#find_suite_contrast(hex, threshold)
+function! irodori#find_suite_contrast(hex, threshold)
   let l:best_contrast = 0
   let l:best_color = ''
 
-  let l:hoge_range = g:myvimcolors#bg_tones
-  let l:hex_hsl = myvimcolors#rgb2hsl(a:hex)
+  let l:hoge_range = g:irodori#bg_tones
+  let l:hex_hsl = irodori#rgb2hsl(a:hex)
   if l:hex_hsl[2] < 50
     let l:mono_range = range(1,9)
   else
@@ -187,10 +187,10 @@ function! myvimcolors#find_suite_contrast(hex, threshold)
   endif
 
   " normal colors
-  let l:hue_idx = myvimcolors#adjust_hue(myvimcolors#hue_info(l:hex_hsl[0])['index']+12)
+  let l:hue_idx = irodori#adjust_hue(irodori#hue_info(l:hex_hsl[0])['index']+12)
   for tone in l:hoge_range
-    let l:col = g:myvimcolors#pccs[tone .. l:hue_idx]
-    let l:con = myvimcolors#get_contrast(a:hex, l:col)
+    let l:col = g:irodori#pccs[tone .. l:hue_idx]
+    let l:con = irodori#get_contrast(a:hex, l:col)
     if l:con > l:best_contrast
       let l:best_contrast = l:con
       let l:best_color = l:col
@@ -200,8 +200,8 @@ function! myvimcolors#find_suite_contrast(hex, threshold)
   " monotone colors
   if l:best_contrast < a:threshold
     for i in l:mono_range
-      let l:col = g:myvimcolors#pccs['Gy-' .. i .. '.5']
-      let l:con = myvimcolors#get_contrast(a:hex, l:col)
+      let l:col = g:irodori#pccs['Gy-' .. i .. '.5']
+      let l:con = irodori#get_contrast(a:hex, l:col)
       if l:con > l:best_contrast
         let l:best_contrast = l:con
         let l:best_color = l:col
@@ -212,8 +212,8 @@ function! myvimcolors#find_suite_contrast(hex, threshold)
   return l:best_color
 endfunction
 
-function! myvimcolors#rgb2hsl(hex) abort
-  let l:hex = myvimcolors#hex2ary(a:hex)
+function! irodori#rgb2hsl(hex) abort
+  let l:hex = irodori#hex2ary(a:hex)
   let l:r = l:hex[0]
   let l:g = l:hex[1]
   let l:b = l:hex[2]
@@ -256,71 +256,71 @@ function! myvimcolors#rgb2hsl(hex) abort
   return map([H, S, L], { i,x -> float2nr(ceil(floor(x * 10) / 10)) })
 endfunction
 
-function! myvimcolors#palette(pattern, accent_color, isdark)
-  let l:accent_hsl = myvimcolors#rgb2hsl(a:accent_color)
-  let l:accent_info = myvimcolors#hue_info(l:accent_hsl[0])
+function! irodori#palette(pattern, accent_color, isdark)
+  let l:accent_hsl = irodori#rgb2hsl(a:accent_color)
+  let l:accent_info = irodori#hue_info(l:accent_hsl[0])
   if a:pattern == 'dominant_color'
     " 'dominant_color' : トーン・色相固定
     if a:isdark == 1
       return [
-            \  g:myvimcolors#pccs['lt' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['sf' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['ltg' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['s' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
+            \  g:irodori#pccs['lt' .. l:accent_info['index']],
+            \  g:irodori#pccs['sf' .. l:accent_info['index']],
+            \  g:irodori#pccs['ltg' .. l:accent_info['index']],
+            \  g:irodori#pccs['s' .. l:accent_info['index']],
+            \  g:irodori#pccs['p' .. l:accent_info['index']],
+            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
             \]
     else
       return [
-            \  g:myvimcolors#pccs['dk' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['d' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['g' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['dp' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
+            \  g:irodori#pccs['dk' .. l:accent_info['index']],
+            \  g:irodori#pccs['d' .. l:accent_info['index']],
+            \  g:irodori#pccs['g' .. l:accent_info['index']],
+            \  g:irodori#pccs['dp' .. l:accent_info['index']],
+            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
+            \  g:irodori#pccs['p' .. l:accent_info['index']],
             \]
     endif
   elseif a:pattern == 'tone_on_tone'
     " 'tone_on_tone' : 色相固定
     if a:isdark == 1
       return [
-            \  g:myvimcolors#pccs['lt' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['sf' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['ltg' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['s' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['p' .. l:accent_info['index']],
+            \  g:irodori#pccs['lt' .. l:accent_info['index']],
+            \  g:irodori#pccs['sf' .. l:accent_info['index']],
+            \  g:irodori#pccs['ltg' .. l:accent_info['index']],
+            \  g:irodori#pccs['s' .. l:accent_info['index']],
+            \  g:irodori#pccs['p' .. l:accent_info['index']],
             \]
     else
       return [
-            \  g:myvimcolors#pccs['dk' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['d' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['g' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['dp' .. l:accent_info['index']],
-            \  g:myvimcolors#pccs['dkg' .. l:accent_info['index']],
+            \  g:irodori#pccs['dk' .. l:accent_info['index']],
+            \  g:irodori#pccs['d' .. l:accent_info['index']],
+            \  g:irodori#pccs['g' .. l:accent_info['index']],
+            \  g:irodori#pccs['dp' .. l:accent_info['index']],
+            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
             \]
     endif
   elseif a:pattern == 'dominant_tone'
-    let l:hue_idx = myvimcolors#hue_info(l:accent_hsl[0])['index']
+    let l:hue_idx = irodori#hue_info(l:accent_hsl[0])['index']
     let l:res = [
-          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx +  4)), l:accent_hsl[1], l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx +  8)), l:accent_hsl[1], l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 12)), l:accent_hsl[1], l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 16)), l:accent_hsl[1], l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb(myvimcolors#idx2hue(myvimcolors#adjust_hue(l:hue_idx + 20)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  irodori#hsl2rgb(irodori#idx2hue(irodori#adjust_hue(l:hue_idx +  4)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  irodori#hsl2rgb(irodori#idx2hue(irodori#adjust_hue(l:hue_idx +  8)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  irodori#hsl2rgb(irodori#idx2hue(irodori#adjust_hue(l:hue_idx + 12)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  irodori#hsl2rgb(irodori#idx2hue(irodori#adjust_hue(l:hue_idx + 16)), l:accent_hsl[1], l:accent_hsl[2]),
+          \  irodori#hsl2rgb(irodori#idx2hue(irodori#adjust_hue(l:hue_idx + 20)), l:accent_hsl[1], l:accent_hsl[2]),
           \]
     if a:isdark == 1
-      return l:res + [g:myvimcolors#pccs['Gy-1.5']]
+      return l:res + [g:irodori#pccs['Gy-1.5']]
     else
-      return l:res + [g:myvimcolors#pccs['Gy-9.5']]
+      return l:res + [g:irodori#pccs['Gy-9.5']]
     endif
   elseif a:pattern == 'tone_in_tone'
     " 'tone_in_tone' : トーン固定
     return [
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, l:accent_hsl[2]),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
-          \  myvimcolors#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, myvimcolors#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
+          \  irodori#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], irodori#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
+          \  irodori#hsl2rgb((l:accent_hsl[0] + (360/24* 0))%360, l:accent_hsl[1], irodori#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
+          \  irodori#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, l:accent_hsl[2]),
+          \  irodori#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, irodori#clump(l:accent_hsl[2]*(1.0-a:isdark*( 0.2)), 0, 100)),
+          \  irodori#hsl2rgb((l:accent_hsl[0] + (360/24*12))%360, 50, irodori#clump(l:accent_hsl[2]*(1.0-a:isdark*(-0.2)), 0, 100)),
           \]
   endif
 endfunction
@@ -337,8 +337,8 @@ function! s:link(src, dest)
   exec "hi! link " . a:src . " " . a:dest
 endfunction
 
-function! myvimcolors#highlights(colors)
-  if myvimcolors#rgb2hsl(a:colors.bg)[2] < 50
+function! irodori#highlights(colors)
+  if irodori#rgb2hsl(a:colors.bg)[2] < 50
     set background=dark
   else
     set background=light
@@ -365,7 +365,7 @@ function! myvimcolors#highlights(colors)
   call s:hi('Function', a:colors.fourth, 'NONE', 'NONE')
 
   " *Statement
-  call s:hi('Statement', a:colors.first, 'NONE', g:myvimcolors#statement_bold ? 'BOLD' : 'NONE')
+  call s:hi('Statement', a:colors.first, 'NONE', g:irodori#statement_bold ? 'BOLD' : 'NONE')
   call s:link('Conditional', 'Statement')
   call s:link('Repeat', 'Statement')
   call s:link('Label', 'Statement')
