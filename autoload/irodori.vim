@@ -3,7 +3,7 @@ if exists('g:autoloaded_irodori')
 endif
 let g:autoloaded_irodori = 1
 
-function! irodori#culculate_colors(first, pattern)
+function! irodori#calculate_colors(first, pattern)
   let l:BG = irodori#find_suite_contrast(a:first, 125)
 
   if irodori#rgb2hsl(l:BG)[2] < 50

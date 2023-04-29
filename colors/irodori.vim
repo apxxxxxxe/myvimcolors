@@ -33,7 +33,7 @@ endif
 let s:seed = srand()
 
 " ----------------------------------------------------------------
-" culculate and apply colors
+" calculate and apply colors
 " ----------------------------------------------------------------
 let s:idx = irodori#adjust_hue(rand(s:seed)%12*2)
 let s:pccs = g:irodori#fg_tones[rand(s:seed)%len(g:irodori#fg_tones)] .. s:idx
@@ -42,4 +42,4 @@ let s:FIRST    = g:irodori#pccs[s:pccs]
 
 let g:irodori#emem = s:pccs .. '/' .. s:pattern
 
-call irodori#highlights(irodori#culculate_colors(s:FIRST, s:pattern))
+call irodori#highlights(irodori#calculate_colors(s:FIRST, s:pattern))
