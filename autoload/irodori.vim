@@ -3,10 +3,21 @@ if exists('g:autoloaded_irodori')
 endif
 let g:autoloaded_irodori = 1
 
-function! irodori#calculate_colors(first, pattern)
-  let l:BG = irodori#find_suite_contrast(a:first, 125)
+function! irodori#random_tone(candidates)
+  let l:seed = srand()
+  let l:tone = a:candidates[rand(l:seed)%len(a:candidates)]
+  if l:tone =~ 'Gy-'
+    return l:tone
+  else
+    let l:idx = irodori#adjust_hue(rand(l:seed)%12*2)
+    return l:tone .. l:idx
+  endif
+endfunction
 
-  if irodori#rgb2hsl(l:BG)[2] < 50
+function! irodori#calculate_colors(bg, pattern)
+  let l:FIRST = irodori#find_suite_contrast(a:bg, 125)
+
+  if irodori#rgb2hsl(a:bg)[2] < 50
     set background=dark
     let l:isdark = 1
   else
@@ -14,34 +25,31 @@ function! irodori#calculate_colors(first, pattern)
     let l:isdark = -1
   endif
 
-  let l:palette = irodori#palette(a:pattern, a:first, l:isdark)
+  let l:palette = irodori#palette(a:pattern, l:FIRST, l:isdark)
   let l:SECOND     = l:palette[0]
   let l:THIRD      = l:palette[1]
   let l:FOURTH     = l:palette[2]
   let l:FIFTH      = l:palette[3]
   let l:SIXTH      = l:palette[4]
-  if len(l:palette) == 6
-    let l:BG         = l:palette[5]
-  endif
 
-  let l:SUBBG     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 7.5 * g:irodori#contrast))
-  let l:COMMENT    = irodori#adjust_hex(l:BG, float2nr(l:isdark * 40 * g:irodori#contrast))
-  let l:MATCHPAREN = irodori#opposite(l:BG)
-  let l:LINENR     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 20 * g:irodori#contrast))
+  let l:SUBBG     = irodori#adjust_hex(a:bg, float2nr(l:isdark * 7.5 * g:irodori#contrast))
+  let l:COMMENT    = irodori#adjust_hex(a:bg, float2nr(l:isdark * 40 * g:irodori#contrast))
+  let l:MATCHPAREN = irodori#opposite(a:bg)
+  let l:LINENR     = irodori#adjust_hex(a:bg, float2nr(l:isdark * 20 * g:irodori#contrast))
 
-  let l:bg_hsl = irodori#rgb2hsl(l:BG)
+  let l:bg_hsl = irodori#rgb2hsl(a:bg)
   let l:FG         = irodori#hsl2rgb(l:bg_hsl[0], l:bg_hsl[1], irodori#clump(100 - l:bg_hsl[2], 30, 70))
 
-  let l:first_hsl = irodori#rgb2hsl(a:first)
+  let l:first_hsl = irodori#rgb2hsl(l:FIRST)
   let l:GREEN = irodori#hsl2rgb(120, l:first_hsl[1], l:first_hsl[2])
   let l:YELLOW = irodori#hsl2rgb(50, l:first_hsl[1], l:first_hsl[2])
   let l:RED = irodori#hsl2rgb(0, l:first_hsl[1], l:first_hsl[2])
 
   return #{
         \  fg:         l:FG,
-        \  bg:         l:BG,
+        \  bg:         a:bg,
         \  comment:    l:COMMENT,
-        \  first:      a:first,
+        \  first:      l:FIRST,
         \  second:     l:SECOND,
         \  third:      l:THIRD,
         \  fourth:     l:FOURTH,
@@ -173,22 +181,22 @@ function! irodori#find_suite_contrast(hex, threshold)
   let l:best_contrast = 0
   let l:best_color = ''
 
-  let l:hoge_range = g:irodori#bg_tones
+  let l:normal_range = g:irodori#fg_tones
   let l:hex_hsl = irodori#rgb2hsl(a:hex)
   if l:hex_hsl[2] < 50
     let l:mono_range = range(1,9)
   else
     let l:mono_range = range(9,1,-1)
-    let l:hoge_range_inverted = []
-    for i in range(len(l:hoge_range))
-      let l:hoge_range_inverted += [l:hoge_range[len(l:hoge_range)-i-1]]
+    let l:normal_range_inverted = []
+    for i in range(len(l:normal_range))
+      let l:normal_range_inverted += [l:normal_range[len(l:normal_range)-i-1]]
     endfor
-    let l:hoge_range = l:hoge_range_inverted
+    let l:normal_range = l:normal_range_inverted
   endif
 
   " normal colors
   let l:hue_idx = irodori#adjust_hue(irodori#hue_info(l:hex_hsl[0])['index']+12)
-  for tone in l:hoge_range
+  for tone in l:normal_range
     let l:col = g:irodori#pccs[tone .. l:hue_idx]
     let l:con = irodori#get_contrast(a:hex, l:col)
     if l:con > l:best_contrast
@@ -205,6 +213,9 @@ function! irodori#find_suite_contrast(hex, threshold)
       if l:con > l:best_contrast
         let l:best_contrast = l:con
         let l:best_color = l:col
+        if l:best_contrast >= a:threshold
+          break
+        endif
       endif
     endfor
   endif
@@ -268,7 +279,6 @@ function! irodori#palette(pattern, accent_color, isdark)
             \  g:irodori#pccs['ltg' .. l:accent_info['index']],
             \  g:irodori#pccs['s' .. l:accent_info['index']],
             \  g:irodori#pccs['p' .. l:accent_info['index']],
-            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
             \]
     else
       return [
@@ -277,7 +287,6 @@ function! irodori#palette(pattern, accent_color, isdark)
             \  g:irodori#pccs['g' .. l:accent_info['index']],
             \  g:irodori#pccs['dp' .. l:accent_info['index']],
             \  g:irodori#pccs['dkg' .. l:accent_info['index']],
-            \  g:irodori#pccs['p' .. l:accent_info['index']],
             \]
     endif
   elseif a:pattern == 'tone_on_tone'
