@@ -178,6 +178,7 @@ function! irodori#get_contrast(a,b)
 endfunction
 
 function! irodori#find_suite_contrast(hex, threshold)
+  let l:best_s = 0
   let l:best_contrast = 0
   let l:best_color = ''
 
@@ -199,7 +200,9 @@ function! irodori#find_suite_contrast(hex, threshold)
   for tone in l:normal_range
     let l:col = g:irodori#pccs[tone .. l:hue_idx]
     let l:con = irodori#get_contrast(a:hex, l:col)
-    if l:con > l:best_contrast
+    let l:sat = irodori#rgb2hsl(l:col)[1]
+    if l:con > l:best_contrast && l:sat > l:best_s
+      let l:best_s = l:sat
       let l:best_contrast = l:con
       let l:best_color = l:col
     endif
