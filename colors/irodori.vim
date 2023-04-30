@@ -14,11 +14,11 @@ endif
 let g:colors_name = 'irodori'
 
 if !exists('g:irodori#fg_tones')
-  " this must be sorted from light to dark
+  " this must be sorted from dark to light
   let g:irodori#fg_tones = ['dkg', 'dk', 'dp', 'g', 'd', 's', 'v', 'ltg', 'sf', 'b', 'lt', 'p']
 endif
 if !exists('g:irodori#patterns')
-  let g:irodori#patterns = ['dominant_color', 'tone_on_tone', 'dominant_tone', 'tone_in_tone']
+  let g:irodori#patterns = ['dominant_color', 'dominant_tone', 'tone_in_tone']
 endif
 if !exists('g:irodori#bg_tones')
   let g:irodori#bg_tones = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']

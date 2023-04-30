@@ -25,7 +25,7 @@ function! irodori#calculate_colors(bg, pattern)
     let l:isdark = -1
   endif
 
-  let l:palette = irodori#palette(a:pattern, l:FIRST, l:isdark)
+  let l:palette = irodori#palette(a:pattern, l:FIRST, a:bg, l:isdark)
   let l:SECOND     = l:palette[0]
   let l:THIRD      = l:palette[1]
   let l:FOURTH     = l:palette[2]
@@ -177,6 +177,28 @@ function! irodori#get_contrast(a,b)
   return abs(((l:a[0]-l:b[0])*299.0 + (l:a[1]-l:b[1])*587.0 + (l:a[2]-l:b[2])*114.0) / 1000)
 endfunction
 
+function! irodori#filter_suite_contrast(hex, idx, threshold)
+  let l:tones = ['p', 'lt', 'b', 'sf', 'ltg', 'v', 's', 'd', 'g', 'dp', 'dk', 'dkg']
+  let l:result = []
+
+  for tone in l:tones
+    let l:col = g:irodori#pccs[tone .. a:idx]
+    if irodori#get_contrast(a:hex, l:col) > a:threshold
+      let l:result += [l:col]
+    endif
+  endfor
+
+  if len(l:result) < 5 
+    if len(l:result) > 0
+      while len(l:result) < 5
+        let l:result += [l:result[rand(srand())%len(l:result)]]
+      endwhile
+    endif
+  endif
+
+  return l:result
+endfunction
+
 function! irodori#find_suite_contrast(hex, threshold)
   let l:best_s = 0
   let l:best_contrast = 0
@@ -270,47 +292,23 @@ function! irodori#rgb2hsl(hex) abort
   return map([H, S, L], { i,x -> float2nr(ceil(floor(x * 10) / 10)) })
 endfunction
 
-function! irodori#palette(pattern, accent_color, isdark)
+function! irodori#palette(pattern, accent_color, bg, isdark)
   let l:accent_hsl = irodori#rgb2hsl(a:accent_color)
   let l:accent_info = irodori#hue_info(l:accent_hsl[0])
   if a:pattern == 'dominant_color'
     " 'dominant_color' : トーン・色相固定
-    if a:isdark == 1
-      return [
-            \  g:irodori#pccs['lt' .. l:accent_info['index']],
-            \  g:irodori#pccs['sf' .. l:accent_info['index']],
-            \  g:irodori#pccs['ltg' .. l:accent_info['index']],
-            \  g:irodori#pccs['s' .. l:accent_info['index']],
-            \  g:irodori#pccs['p' .. l:accent_info['index']],
-            \]
-    else
-      return [
-            \  g:irodori#pccs['dk' .. l:accent_info['index']],
-            \  g:irodori#pccs['d' .. l:accent_info['index']],
-            \  g:irodori#pccs['g' .. l:accent_info['index']],
-            \  g:irodori#pccs['dp' .. l:accent_info['index']],
-            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
-            \]
+    for t in range(125, 75, -25)
+      let l:colors = irodori#filter_suite_contrast(a:bg, l:accent_info['index'], t)
+      if len(l:colors) >= 5
+        break
+      endif
+    endfor
+
+    if len(l:colors) < 5
+      throw 'error while irodori: not enough suite contrasts'
     endif
-  elseif a:pattern == 'tone_on_tone'
-    " 'tone_on_tone' : 色相固定
-    if a:isdark == 1
-      return [
-            \  g:irodori#pccs['lt' .. l:accent_info['index']],
-            \  g:irodori#pccs['sf' .. l:accent_info['index']],
-            \  g:irodori#pccs['ltg' .. l:accent_info['index']],
-            \  g:irodori#pccs['s' .. l:accent_info['index']],
-            \  g:irodori#pccs['p' .. l:accent_info['index']],
-            \]
-    else
-      return [
-            \  g:irodori#pccs['dk' .. l:accent_info['index']],
-            \  g:irodori#pccs['d' .. l:accent_info['index']],
-            \  g:irodori#pccs['g' .. l:accent_info['index']],
-            \  g:irodori#pccs['dp' .. l:accent_info['index']],
-            \  g:irodori#pccs['dkg' .. l:accent_info['index']],
-            \]
-    endif
+
+    return l:colors
   elseif a:pattern == 'dominant_tone'
     let l:hue_idx = irodori#hue_info(l:accent_hsl[0])['index']
     let l:res = [
