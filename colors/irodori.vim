@@ -43,11 +43,6 @@ let s:pccs = irodori#random_tone(g:irodori#bg_tones)
 let s:pattern  = g:irodori#patterns[rand(s:seed)%len(g:irodori#patterns)]
 let s:BG    = g:irodori#pccs[s:pccs]
 
-if rand(s:seed) % 100 < g:irodori#monotone_bg_possibility
-  let s:bg_info = irodori#rgb2hsl(s:BG)
-  let s:BG = irodori#hsl2rgb(s:bg_info[0], 0, s:bg_info[2])
-endif
-
 let g:irodori#emem = s:pccs .. '/' .. s:pattern
 
 call irodori#highlights(irodori#calculate_colors(s:BG, s:pattern))

@@ -32,12 +32,19 @@ function! irodori#calculate_colors(bg, pattern)
   let l:FIFTH      = l:palette[3]
   let l:SIXTH      = l:palette[4]
 
-  let l:SUBBG     = irodori#adjust_hex(a:bg, float2nr(l:isdark * 7.5 * g:irodori#contrast))
-  let l:COMMENT    = irodori#adjust_hex(a:bg, float2nr(l:isdark * 40 * g:irodori#contrast))
-  let l:MATCHPAREN = irodori#opposite(a:bg)
-  let l:LINENR     = irodori#adjust_hex(a:bg, float2nr(l:isdark * 20 * g:irodori#contrast))
+  if rand(srand()) % 100 < g:irodori#monotone_bg_possibility
+    let l:bg_info = irodori#rgb2hsl(a:bg)
+    let l:BG = irodori#hsl2rgb(l:bg_info[0], 0, l:bg_info[2])
+  else
+    let l:BG = a:bg
+  endif
 
-  let l:bg_hsl = irodori#rgb2hsl(a:bg)
+  let l:SUBBG     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 7.5 * g:irodori#contrast))
+  let l:COMMENT    = irodori#adjust_hex(l:BG, float2nr(l:isdark * 40 * g:irodori#contrast))
+  let l:MATCHPAREN = irodori#opposite(l:BG)
+  let l:LINENR     = irodori#adjust_hex(l:BG, float2nr(l:isdark * 20 * g:irodori#contrast))
+
+  let l:bg_hsl = irodori#rgb2hsl(l:BG)
   let l:FG         = irodori#hsl2rgb(l:bg_hsl[0], l:bg_hsl[1], irodori#clump(100 - l:bg_hsl[2], 30, 70))
 
   let l:first_hsl = irodori#rgb2hsl(l:FIRST)
@@ -47,7 +54,7 @@ function! irodori#calculate_colors(bg, pattern)
 
   return #{
         \  fg:         l:FG,
-        \  bg:         a:bg,
+        \  bg:         l:BG,
         \  comment:    l:COMMENT,
         \  first:      l:FIRST,
         \  second:     l:SECOND,
