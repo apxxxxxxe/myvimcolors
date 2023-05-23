@@ -206,6 +206,16 @@ function! irodori#filter_suite_contrast(hex, idx, threshold)
   return l:result
 endfunction
 
+function! irodori#verify_colors(bg, tone, threshold)
+  for i in range(2,24,2)
+    let l:col = g:irodori#pccs[a:tone .. i]
+    if irodori#get_contrast(a:bg, l:col) < a:threshold
+      return 0
+    endif
+  endfor
+  return 1
+endfunction
+
 function! irodori#find_suite_contrast(hex, threshold)
   let l:best_s = 0
   let l:best_contrast = 0
@@ -226,31 +236,37 @@ function! irodori#find_suite_contrast(hex, threshold)
 
   " normal colors
   let l:hue_idx = irodori#adjust_hue(irodori#hue_info(l:hex_hsl[0])['index']+12)
+  let l:hoge = ''
   for tone in l:normal_range
-    let l:col = g:irodori#pccs[tone .. l:hue_idx]
-    let l:con = irodori#get_contrast(a:hex, l:col)
-    let l:sat = irodori#rgb2hsl(l:col)[1]
-    if l:con > l:best_contrast && l:sat > l:best_s
-      let l:best_s = l:sat
-      let l:best_contrast = l:con
-      let l:best_color = l:col
+    if irodori#verify_colors(a:hex, tone, g:fg_contrast_threshold)
+      let l:col = g:irodori#pccs[tone .. l:hue_idx]
+      let l:con = irodori#get_contrast(a:hex, l:col)
+      let l:sat = irodori#rgb2hsl(l:col)[1]
+      if l:con > l:best_contrast && l:sat > l:best_s
+          let l:best_s = l:sat
+          let l:best_contrast = l:con
+          let l:best_color = l:col
+          let l:hoge = tone .. l:hue_idx
+      endif
     endif
   endfor
 
   " monotone colors
-  if l:best_contrast < a:threshold
-    for i in l:mono_range
-      let l:col = g:irodori#pccs['Gy-' .. i .. '.5']
-      let l:con = irodori#get_contrast(a:hex, l:col)
-      if l:con > l:best_contrast
-        let l:best_contrast = l:con
-        let l:best_color = l:col
-        if l:best_contrast >= a:threshold
-          break
-        endif
-      endif
-    endfor
-  endif
+  " if l:best_contrast < a:threshold
+  "   for i in l:mono_range
+  "     let l:col = g:irodori#pccs['Gy-' .. i .. '.5']
+  "     let l:con = irodori#get_contrast(a:hex, l:col)
+  "     if l:con > l:best_contrast
+  "       let l:best_contrast = l:con
+  "       let l:best_color = l:col
+  "       if l:best_contrast >= a:threshold
+  "         break
+  "       endif
+  "     endif
+  "   endfor
+  " endif
+
+  let g:irodori#emem .= '/' .. l:hoge
 
   return l:best_color
 endfunction

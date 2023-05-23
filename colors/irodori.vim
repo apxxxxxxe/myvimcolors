@@ -33,6 +33,9 @@ if !exists('g:irodori#monotone_bg_possibility')
   " min=0, max=99
   let g:irodori#monotone_bg_possibility = 33
 endif
+if !exists('g:fg_contrast_threshold')
+  let g:fg_contrast_threshold = 70
+endif
 
 let s:seed = srand()
 
