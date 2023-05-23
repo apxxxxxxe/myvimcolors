@@ -44,7 +44,11 @@ let s:seed = srand()
 " ----------------------------------------------------------------
 let s:pccs = irodori#random_tone(g:irodori#bg_tones)
 let s:pattern  = g:irodori#patterns[rand(s:seed)%len(g:irodori#patterns)]
-let s:BG    = g:irodori#pccs[s:pccs]
+let s:raw_bg    = g:irodori#pccs[s:pccs]
+let s:raw_bg_hsl = irodori#rgb2hsl(s:raw_bg)
+
+" 背景色の彩度を下げる
+let s:BG = irodori#hsl2rgb(s:raw_bg_hsl[0], 10, s:raw_bg_hsl[2])
 
 let g:irodori#emem = s:pccs .. '/' .. s:pattern
 
