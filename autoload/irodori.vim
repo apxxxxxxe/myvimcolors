@@ -441,7 +441,7 @@ function! irodori#highlights(colors)
 
   " Interface highlighting
   call s:hi('Normal', a:colors.fg, a:colors.bg, 'NONE')
-  call s:hi('Visual', a:colors.bg, a:colors.fg, 'NONE')
+  call s:hi('Visual', 'NONE', a:colors.linenr, 'NONE')
   call s:hi('Cursor', 'NONE', 'NONE', 'NONE')
   call s:hi('iCursor', 'NONE', 'NONE', 'NONE')
   call s:hi('LineNr', a:colors.linenr, a:colors.bg, 'NONE')
